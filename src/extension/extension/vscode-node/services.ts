@@ -7,7 +7,6 @@ import { ExtensionContext, ExtensionMode } from 'vscode';
 import { IAuthenticationService } from '../../../platform/authentication/common/authentication';
 import { ICopilotTokenManager } from '../../../platform/authentication/common/copilotTokenManager';
 import { getOrCreateTestingCopilotTokenManager } from '../../../platform/authentication/node/copilotTokenManager';
-import { AuthenticationService } from '../../../platform/authentication/vscode-node/authenticationService';
 import { VSCodeCopilotTokenManager } from '../../../platform/authentication/vscode-node/copilotTokenManager';
 import { IChatAgentService } from '../../../platform/chat/common/chatAgents';
 import { IChatMLFetcher } from '../../../platform/chat/common/chatMLFetcher';
@@ -28,6 +27,7 @@ import { IGithubRepositoryService } from '../../../platform/github/common/github
 import { GithubRepositoryService } from '../../../platform/github/node/githubRepositoryService';
 import { IIgnoreService } from '../../../platform/ignore/common/ignoreService';
 import { VsCodeIgnoreService } from '../../../platform/ignore/vscode-node/ignoreService';
+import { ILanguageContextProviderService } from '../../../platform/languageContextProvider/common/languageContextProviderService';
 import { ILanguageContextService } from '../../../platform/languageServer/common/languageContextService';
 import { ICompletionsFetchService } from '../../../platform/nesFetch/common/completionsFetchService';
 import { CompletionsFetchService } from '../../../platform/nesFetch/node/completionsFetchServiceImpl';
@@ -53,6 +53,9 @@ import { ITelemetryService, ITelemetryUserConfig, TelemetryUserConfigImpl } from
 import { APP_INSIGHTS_KEY_ENHANCED, APP_INSIGHTS_KEY_STANDARD } from '../../../platform/telemetry/node/azureInsights';
 import { MicrosoftExperimentationService } from '../../../platform/telemetry/vscode-node/microsoftExperimentationService';
 import { TelemetryService } from '../../../platform/telemetry/vscode-node/telemetryServiceImpl';
+// eslint-disable-next-line local/no-test-imports
+import { AuthenticationService } from '../../../platform/authentication/vscode-node/authenticationService';
+import { TestAuthenticationService } from '../../../platform/test/node/testAuthenticationService';
 import { IWorkspaceMutationManager } from '../../../platform/testing/common/workspaceMutationManager';
 import { ISetupTestsDetector, SetupTestsDetector } from '../../../platform/testing/node/setupTestDetector';
 import { ITestDepsResolver, TestDepsResolver } from '../../../platform/testing/node/testDepsResolver';
@@ -97,7 +100,6 @@ import { LanguageContextServiceImpl } from '../../typescriptContext/vscode-node/
 import { IWorkspaceListenerService } from '../../workspaceRecorder/common/workspaceListenerService';
 import { WorkspacListenerService } from '../../workspaceRecorder/vscode-node/workspaceListenerService';
 import { registerServices as registerCommonServices } from '../vscode/services';
-import { ILanguageContextProviderService } from '../../../platform/languageContextProvider/common/languageContextProviderService';
 
 // ###########################################################################################
 // ###                                                                                     ###
@@ -134,11 +136,12 @@ export function registerServices(builder: IInstantiationServiceBuilder, extensio
 		// which implement VSCode interfaces so can't be changed to take `accessor` in their
 		// method parameters.
 		builder.define(ICopilotTokenManager, getOrCreateTestingCopilotTokenManager());
+		builder.define(IAuthenticationService, new SyncDescriptor(TestAuthenticationService, [undefined]));
 	} else {
 		setupTelemetry(builder, extensionContext, internalAIKey, internalLargeEventAIKey, ariaKey);
 		builder.define(ICopilotTokenManager, new SyncDescriptor(VSCodeCopilotTokenManager));
+		builder.define(IAuthenticationService, new SyncDescriptor(AuthenticationService));
 	}
-	builder.define(IAuthenticationService, new SyncDescriptor(AuthenticationService));
 
 	builder.define(ITestGenInfoStorage, new SyncDescriptor(TestGenInfoStorage)); // Used for test generation (/tests intent)
 	builder.define(IEndpointProvider, new SyncDescriptor(ProductionEndpointProvider, [collectFetcherTelemetry]));
