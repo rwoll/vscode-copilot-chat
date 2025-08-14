@@ -6,7 +6,9 @@
 import { ExtensionContext, ExtensionMode } from 'vscode';
 import { IAuthenticationService } from '../../../platform/authentication/common/authentication';
 import { ICopilotTokenManager } from '../../../platform/authentication/common/copilotTokenManager';
+import { StaticGitHubAuthenticationService } from '../../../platform/authentication/common/staticGitHubAuthenticationService';
 import { getOrCreateTestingCopilotTokenManager } from '../../../platform/authentication/node/copilotTokenManager';
+import { AuthenticationService } from '../../../platform/authentication/vscode-node/authenticationService';
 import { VSCodeCopilotTokenManager } from '../../../platform/authentication/vscode-node/copilotTokenManager';
 import { IChatAgentService } from '../../../platform/chat/common/chatAgents';
 import { IChatMLFetcher } from '../../../platform/chat/common/chatMLFetcher';
@@ -53,9 +55,6 @@ import { ITelemetryService, ITelemetryUserConfig, TelemetryUserConfigImpl } from
 import { APP_INSIGHTS_KEY_ENHANCED, APP_INSIGHTS_KEY_STANDARD } from '../../../platform/telemetry/node/azureInsights';
 import { MicrosoftExperimentationService } from '../../../platform/telemetry/vscode-node/microsoftExperimentationService';
 import { TelemetryService } from '../../../platform/telemetry/vscode-node/telemetryServiceImpl';
-// eslint-disable-next-line local/no-test-imports
-import { AuthenticationService } from '../../../platform/authentication/vscode-node/authenticationService';
-import { TestAuthenticationService } from '../../../platform/test/node/testAuthenticationService';
 import { IWorkspaceMutationManager } from '../../../platform/testing/common/workspaceMutationManager';
 import { ISetupTestsDetector, SetupTestsDetector } from '../../../platform/testing/node/setupTestDetector';
 import { ITestDepsResolver, TestDepsResolver } from '../../../platform/testing/node/testDepsResolver';
@@ -136,7 +135,7 @@ export function registerServices(builder: IInstantiationServiceBuilder, extensio
 		// which implement VSCode interfaces so can't be changed to take `accessor` in their
 		// method parameters.
 		builder.define(ICopilotTokenManager, getOrCreateTestingCopilotTokenManager());
-		builder.define(IAuthenticationService, new SyncDescriptor(TestAuthenticationService, [undefined]));
+		builder.define(IAuthenticationService, new SyncDescriptor(StaticGitHubAuthenticationService, [undefined]));
 	} else {
 		setupTelemetry(builder, extensionContext, internalAIKey, internalLargeEventAIKey, ariaKey);
 		builder.define(ICopilotTokenManager, new SyncDescriptor(VSCodeCopilotTokenManager));
