@@ -17,6 +17,7 @@ import { IEndpointProvider } from '../../../platform/endpoint/common/endpointPro
 import { CustomDataPartMimeTypes } from '../../../platform/endpoint/common/endpointTypes';
 import { encodeStatefulMarker } from '../../../platform/endpoint/common/statefulMarkerContainer';
 import { IEnvService } from '../../../platform/env/common/envService';
+import { IVSCodeExtensionContext } from '../../../platform/extContext/common/extensionContext';
 import { ILogService } from '../../../platform/log/common/logService';
 import { FinishedCallback, OpenAiFunctionTool, OptionalChatRequestParams } from '../../../platform/networking/common/fetch';
 import { IChatEndpoint, IEndpoint } from '../../../platform/networking/common/networking';
@@ -30,6 +31,7 @@ import { isDefined, isNumber, isString, isStringArray } from '../../../util/vs/b
 import { generateUuid } from '../../../util/vs/base/common/uuid';
 import { localize } from '../../../util/vs/nls';
 import { IInstantiationService } from '../../../util/vs/platform/instantiation/common/instantiation';
+import { ExtensionMode } from '../../../vscodeTypes';
 import { IExtensionContribution } from '../../common/contributions';
 import { PromptRenderer } from '../../prompts/node/base/promptRenderer';
 import { isImageDataPart } from '../common/languageModelChatMessageHelpers';
@@ -52,7 +54,7 @@ export class LanguageModelAccess extends Disposable implements IExtensionContrib
 		@IAuthenticationService private readonly _authenticationService: IAuthenticationService,
 		@IEndpointProvider private readonly _endpointProvider: IEndpointProvider,
 		@IEmbeddingsComputer private readonly _embeddingsComputer: IEmbeddingsComputer,
-		// @IVSCodeExtensionContext private readonly _vsCodeExtensionContext: IVSCodeExtensionContext,
+		@IVSCodeExtensionContext private readonly _vsCodeExtensionContext: IVSCodeExtensionContext,
 		@IExperimentationService private readonly _expService: IExperimentationService,
 		@IAutomodeService private readonly _automodeService: IAutomodeService,
 		@IEnvService private readonly _envService: IEnvService
@@ -60,10 +62,10 @@ export class LanguageModelAccess extends Disposable implements IExtensionContrib
 		super();
 
 		this._lmWrapper = this._instantiationService.createInstance(CopilotLanguageModelWrapper);
-		// if (this._vsCodeExtensionContext.extensionMode === ExtensionMode.Test) {
-		// 	this._logService.warn('[LanguageModelAccess] LanguageModels and Embeddings are NOT AVAILABLE in test mode.');
-		// 	return;
-		// }
+		if (this._vsCodeExtensionContext.extensionMode === ExtensionMode.Test) {
+			this._logService.warn('[LanguageModelAccess] LanguageModels and Embeddings are NOT AVAILABLE in test mode.');
+			return;
+		}
 
 		// initial
 		this.activationBlocker = Promise.all([

@@ -23,6 +23,7 @@ import { IDomainService } from '../../../platform/endpoint/common/domainService'
 import { IEndpointProvider } from '../../../platform/endpoint/common/endpointProvider';
 import { CAPIClientImpl } from '../../../platform/endpoint/node/capiClientImpl';
 import { DomainService } from '../../../platform/endpoint/node/domainServiceImpl';
+import { isScenarioAutomation } from '../../../platform/env/common/envService';
 import { IGitCommitMessageService } from '../../../platform/git/common/gitCommitMessageService';
 import { IGitDiffService } from '../../../platform/git/common/gitDiffService';
 import { IGithubRepositoryService } from '../../../platform/github/common/githubService';
@@ -135,10 +136,15 @@ export function registerServices(builder: IInstantiationServiceBuilder, extensio
 		// which implement VSCode interfaces so can't be changed to take `accessor` in their
 		// method parameters.
 		builder.define(ICopilotTokenManager, getOrCreateTestingCopilotTokenManager());
-		builder.define(IAuthenticationService, new SyncDescriptor(StaticGitHubAuthenticationService, [undefined]));
 	} else {
 		setupTelemetry(builder, extensionContext, internalAIKey, internalLargeEventAIKey, ariaKey);
 		builder.define(ICopilotTokenManager, new SyncDescriptor(VSCodeCopilotTokenManager));
+	}
+
+	if (isScenarioAutomation) {
+		builder.define(IAuthenticationService, new SyncDescriptor(StaticGitHubAuthenticationService, [undefined]));
+	}
+	else {
 		builder.define(IAuthenticationService, new SyncDescriptor(AuthenticationService));
 	}
 

@@ -5,7 +5,7 @@
 
 import * as l10n from '@vscode/l10n';
 import { commands, env, ExtensionContext, ExtensionMode, l10n as vscodeL10n } from 'vscode';
-import { IEnvService } from '../../../platform/env/common/envService';
+import { IEnvService, isScenarioAutomation } from '../../../platform/env/common/envService';
 import { IHeatmapService } from '../../../platform/heatmap/common/heatmapService';
 import { IIgnoreService } from '../../../platform/ignore/common/ignoreService';
 import { IExperimentationService } from '../../../platform/telemetry/common/nullExperimentationService';
@@ -32,11 +32,11 @@ export interface IExtensionActivationConfiguration {
 
 export async function baseActivate(configuration: IExtensionActivationConfiguration) {
 	const context = configuration.context;
-	// if (context.extensionMode === ExtensionMode.Test && !configuration.forceActivation) {
-	// 	// FIXME Running in tests, don't activate the extension
-	// 	// Avoid bundling the extension code in the test bundle
-	// 	return context;
-	// }
+	if (context.extensionMode === ExtensionMode.Test && !configuration.forceActivation && !isScenarioAutomation) {
+		// FIXME Running in tests, don't activate the extension
+		// Avoid bundling the extension code in the test bundle
+		return context;
+	}
 
 	// Check if the extension is running in a pre-release version of VS Code
 	const isStableVsCode = !(env.appName.includes('Insiders') || env.appName.includes('Exploration') || env.appName.includes('OSS'));
