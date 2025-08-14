@@ -17,6 +17,7 @@ import { AuthenticationChatUpgradeService } from '../../authentication/common/au
 import { ICopilotTokenManager } from '../../authentication/common/copilotTokenManager';
 import { CopilotTokenStore, ICopilotTokenStore } from '../../authentication/common/copilotTokenStore';
 import { StaticGitHubAuthenticationService } from '../../authentication/common/staticGitHubAuthenticationService';
+import { getStaticGitHubToken } from '../../authentication/node/copilotTokenManager';
 import { SimulationTestCopilotTokenManager } from '../../authentication/test/node/simulationTestCopilotTokenManager';
 import { IChatAgentService } from '../../chat/common/chatAgents';
 import { IChatQuotaService } from '../../chat/common/chatQuotaService';
@@ -195,7 +196,7 @@ export function _createBaselineServices(): TestingServiceCollection {
 	// Notifications from the monolith when fetching a token can trigger behaviour that require these objects.
 	testingServiceCollection.define(IUrlOpener, new SyncDescriptor(NullUrlOpener));
 	testingServiceCollection.define(ICopilotTokenManager, new SyncDescriptor(SimulationTestCopilotTokenManager));
-	testingServiceCollection.define(IAuthenticationService, new SyncDescriptor(StaticGitHubAuthenticationService, [undefined]));
+	testingServiceCollection.define(IAuthenticationService, new SyncDescriptor(StaticGitHubAuthenticationService, [getStaticGitHubToken]));
 	testingServiceCollection.define(IHeaderContributors, new SyncDescriptor(HeaderContributors));
 
 	testingServiceCollection.define(IConversationOptions, new SyncDescriptor(class implements IConversationOptions {

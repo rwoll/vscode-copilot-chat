@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { AuthenticationGetSessionOptions, AuthenticationSession } from 'vscode';
+import { IConfigurationService } from '../../configuration/common/configurationService';
+import { ILogService } from '../../log/common/logService';
 import { BaseAuthenticationService, GITHUB_SCOPE_ALIGNED, GITHUB_SCOPE_USER_EMAIL, IAuthenticationService, MinimalModeError } from './authentication';
 import { CopilotToken } from './copilotToken';
 import { ICopilotTokenManager } from './copilotTokenManager';
 import { ICopilotTokenStore } from './copilotTokenStore';
-import { IConfigurationService } from '../../configuration/common/configurationService';
-import { ILogService } from '../../log/common/logService';
 
 export class StaticGitHubAuthenticationService extends BaseAuthenticationService {
 
