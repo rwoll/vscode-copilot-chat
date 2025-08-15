@@ -5,7 +5,7 @@
 
 import * as l10n from '@vscode/l10n';
 import { commands, env, ExtensionContext, ExtensionMode, l10n as vscodeL10n } from 'vscode';
-import { IEnvService, isScenarioAutomation } from '../../../platform/env/common/envService';
+import { isScenarioAutomation } from '../../../platform/env/common/envService';
 import { isProduction } from '../../../platform/env/common/packagejson';
 import { IHeatmapService } from '../../../platform/heatmap/common/heatmapService';
 import { IIgnoreService } from '../../../platform/ignore/common/ignoreService';
