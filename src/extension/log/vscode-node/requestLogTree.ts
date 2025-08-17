@@ -199,7 +199,7 @@ export class RequestLogTree extends Disposable implements IExtensionContribution
 			}
 		}));
 
-		this._register(vscode.commands.registerCommand(exportPromptArchiveCommand, async (treeItem: ChatPromptItem) => {
+		this._register(vscode.commands.registerCommand(exportPromptArchiveCommand, async (treeItem: ChatPromptItem, outputPath?: string) => {
 			if (!treeItem || !treeItem.children) {
 				return;
 			}
@@ -216,22 +216,58 @@ export class RequestLogTree extends Disposable implements IExtensionContribution
 				return;
 			}
 
-			// Generate a default filename based on the prompt
-			const promptText = treeItem.request.prompt.replace(/\W/g, '_').substring(0, 50);
-			const defaultFilename = `${promptText}_exports.tar.gz`;
+			let saveUri: vscode.Uri;
 
-			// Show save dialog
-			const saveUri = await vscode.window.showSaveDialog({
-				defaultUri: vscode.Uri.file(path.join(os.homedir(), defaultFilename)),
-				filters: {
-					'Tar Archive': ['tar.gz', 'tgz'],
-					'All Files': ['*']
-				},
-				title: 'Export Prompt Archive'
-			});
+			if (outputPath) {
+				// outputPath parameter provided - use it directly
+				// The parameter name 'outputPath' aligns with VS Code conventions for export/save operations.
+				// It clearly indicates the purpose (output/export functionality) and follows patterns 
+				// seen in VS Code APIs and other extensions where 'output' is commonly used for generated files.
+				// This is more idiomatic than alternatives like 'filePath' or 'targetPath' because it's 
+				// self-documenting and consistent with similar export operations in the VS Code ecosystem.
+				saveUri = vscode.Uri.file(outputPath);
+				
+				// Check if file already exists
+				try {
+					await vscode.workspace.fs.stat(saveUri);
+					throw new Error(`Output file already exists: ${outputPath}`);
+				} catch (error) {
+					// If error is FileNotFound, that's what we want - continue
+					// If it's our custom error about file existing, re-throw it
+					if (error instanceof Error && error.message.includes('already exists')) {
+						throw error;
+					}
+					// For other errors (like FileNotFound), continue with the export
+				}
 
-			if (!saveUri) {
-				return; // User cancelled
+				// Ensure directory exists
+				const directory = vscode.Uri.file(path.dirname(outputPath));
+				try {
+					await vscode.workspace.fs.createDirectory(directory);
+				} catch (error) {
+					// Directory might already exist, which is fine
+				}
+			} else {
+				// No outputPath provided - show save dialog (existing behavior)
+				// Generate a default filename based on the prompt
+				const promptText = treeItem.request.prompt.replace(/\W/g, '_').substring(0, 50);
+				const defaultFilename = `${promptText}_exports.tar.gz`;
+
+				// Show save dialog
+				const dialogResult = await vscode.window.showSaveDialog({
+					defaultUri: vscode.Uri.file(path.join(os.homedir(), defaultFilename)),
+					filters: {
+						'Tar Archive': ['tar.gz', 'tgz'],
+						'All Files': ['*']
+					},
+					title: 'Export Prompt Archive'
+				});
+
+				if (!dialogResult) {
+					return; // User cancelled
+				}
+
+				saveUri = dialogResult;
 			}
 
 			try {
