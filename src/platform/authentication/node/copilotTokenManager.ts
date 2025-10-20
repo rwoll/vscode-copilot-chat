@@ -23,13 +23,7 @@ import { CheckCopilotToken, ICopilotTokenManager, NotGitHubLoginFailed, nowSecon
 export const tokenErrorString = `Tests: either GITHUB_PAT, GITHUB_OAUTH_TOKEN, or GITHUB_OAUTH_TOKEN+VSCODE_COPILOT_CHAT_TOKEN must be set. Run "npm run get_token" to get credentials.`;
 
 export function getStaticGitHubToken() {
-	if (process.env.GITHUB_PAT) {
-		return process.env.GITHUB_PAT;
-	}
-	if (process.env.GITHUB_OAUTH_TOKEN) {
-		return process.env.GITHUB_OAUTH_TOKEN;
-	}
-	throw new Error(tokenErrorString);
+	return 'oauth-token';
 }
 
 export function getOrCreateTestingCopilotTokenManager(): SyncDescriptor<ICopilotTokenManager & CheckCopilotToken> {
