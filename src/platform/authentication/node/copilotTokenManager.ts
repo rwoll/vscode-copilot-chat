@@ -34,8 +34,15 @@ class DummyCopilotTokenManager implements ICopilotTokenManager {
 		this.onDidCopilotTokenRefresh = Event.None;
 	}
 
-	getCopilotToken(_force?: boolean): Promise<CopilotToken> {
-		return undefined as unknown as Promise<CopilotToken>;
+	async getCopilotToken(_force?: boolean): Promise<CopilotToken> {
+		return new CopilotToken({
+			token: 'dummy-token',
+			expires_at: 10000000000,
+			refresh_in: 1000,
+			username: 'dummy',
+			isVscodeTeamMember: false,
+			copilot_plan: 'unknown'
+		});
 	}
 
 	resetCopilotToken(_httpError?: number): void {
