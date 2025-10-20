@@ -105,13 +105,13 @@ export class LanguageModelAccess extends Disposable implements IExtensionContrib
 		const models: vscode.LanguageModelChatInformation[] = [];
 		const chatEndpoints = await this._endpointProvider.getAllChatEndpoints();
 
-		let defaultChatEndpoint = chatEndpoints.find(e => e.isDefault) ?? chatEndpoints[0];
-		const autoEndpoint = await this._automodeService.resolveAutoModeEndpoint(undefined, chatEndpoints);
-		chatEndpoints.push(autoEndpoint);
-		// No Auth users always get Auto as the default model
-		if (this._authenticationService.copilotToken?.isNoAuthUser) {
-			defaultChatEndpoint = autoEndpoint;
-		}
+		// let defaultChatEndpoint = chatEndpoints.find(e => e.isDefault) ?? chatEndpoints[0];
+		// const autoEndpoint = await this._automodeService.resolveAutoModeEndpoint(undefined, chatEndpoints);
+		// chatEndpoints.push(autoEndpoint);
+		// // No Auth users always get Auto as the default model
+		// if (this._authenticationService.copilotToken?.isNoAuthUser) {
+		// 	defaultChatEndpoint = autoEndpoint;
+		// }
 		const seenFamilies = new Set<string>();
 
 		for (const endpoint of chatEndpoints) {
@@ -178,7 +178,7 @@ export class LanguageModelAccess extends Disposable implements IExtensionContrib
 				maxInputTokens: endpoint.modelMaxPromptTokens - baseCount - BaseTokensPerCompletion,
 				maxOutputTokens: endpoint.maxOutputTokens,
 				requiresAuthorization: session && { label: session.account.label },
-				isDefault: endpoint === defaultChatEndpoint,
+				isDefault: true,
 				isUserSelectable: endpoint.showInModelPicker,
 				capabilities: {
 					imageInput: endpoint.supportsVision,
