@@ -34,7 +34,7 @@ export function getStaticGitHubToken() {
 
 export function getOrCreateTestingCopilotTokenManager(): SyncDescriptor<ICopilotTokenManager & CheckCopilotToken> {
 	console.log('@@@ getOrCreateTestingCopilotTokenManager: called');
-	return new SyncDescriptor(CopilotTokenManagerFromGitHubToken, ['fooooo']);
+	return new SyncDescriptor(CopilotTokenManagerFromGitHubToken, []);
 }
 
 //TODO: Move this to common
