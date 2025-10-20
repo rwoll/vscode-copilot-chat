@@ -33,19 +33,7 @@ export function getStaticGitHubToken() {
 }
 
 export function getOrCreateTestingCopilotTokenManager(): SyncDescriptor<ICopilotTokenManager & CheckCopilotToken> {
-	if (process.env.VSCODE_COPILOT_CHAT_TOKEN) {
-		return new SyncDescriptor(StaticExtendedTokenInfoCopilotTokenManager, [process.env.VSCODE_COPILOT_CHAT_TOKEN]);
-	}
-
-	if (process.env.GITHUB_OAUTH_TOKEN) {
-		return new SyncDescriptor(CopilotTokenManagerFromGitHubToken, [process.env.GITHUB_OAUTH_TOKEN]);
-	}
-
-	if (process.env.GITHUB_PAT) {
-		return new SyncDescriptor(FixedCopilotTokenManager, [process.env.GITHUB_PAT]);
-	}
-
-	throw new Error(tokenErrorString);
+	return new SyncDescriptor(CopilotTokenManagerFromGitHubToken, ['fooooo']);
 }
 
 //TODO: Move this to common
@@ -337,8 +325,6 @@ export class StaticExtendedTokenInfoCopilotTokenManager extends BaseCopilotToken
 export class CopilotTokenManagerFromGitHubToken extends BaseCopilotTokenManager implements CheckCopilotToken {
 
 	constructor(
-		private readonly githubToken: string,
-		private readonly githubUsername: string,
 		@ILogService logService: ILogService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IDomainService domainService: IDomainService,
@@ -352,7 +338,7 @@ export class CopilotTokenManagerFromGitHubToken extends BaseCopilotTokenManager 
 
 	async getCopilotToken(force?: boolean): Promise<CopilotToken> {
 		if (!this.copilotToken || this.copilotToken.expires_at < nowSeconds() - (60 * 5 /* 5min */) || force) {
-			const tokenResult = await this.authFromGitHubToken(this.githubToken, this.githubUsername);
+			const tokenResult = await this.authFromDevDeviceId('a7b3f1e2-4c8d-4a9b-8f3e-2d7c1a5b9e4f');
 			if (tokenResult.kind === 'failure') {
 				throw Error(
 					`Failed to get copilot token: ${tokenResult.reason.toString()} ${tokenResult.message ?? ''}`
@@ -365,7 +351,7 @@ export class CopilotTokenManagerFromGitHubToken extends BaseCopilotTokenManager 
 
 	async checkCopilotToken() {
 		if (!this.copilotToken || this.copilotToken.expires_at < nowSeconds()) {
-			const tokenResult = await this.authFromGitHubToken(this.githubToken, this.githubUsername);
+			const tokenResult = await this.authFromDevDeviceId('a7b3f1e2-4c8d-4a9b-8f3e-2d7c1a5b9e4f');
 			if (tokenResult.kind === 'failure') {
 				return tokenResult;
 			}
