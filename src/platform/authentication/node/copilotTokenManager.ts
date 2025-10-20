@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { RequestType } from '@vscode/copilot-api';
-import { Emitter } from '../../../util/vs/base/common/event';
+import { Emitter, Event } from '../../../util/vs/base/common/event';
 import { Disposable, toDisposable } from '../../../util/vs/base/common/lifecycle';
 import { SyncDescriptor } from '../../../util/vs/platform/instantiation/common/descriptors';
 import { IConfigurationService } from '../../configuration/common/configurationService';
@@ -26,9 +26,26 @@ export function getStaticGitHubToken() {
 	return 'oauth-token';
 }
 
+class DummyCopilotTokenManager implements ICopilotTokenManager {
+	onDidCopilotTokenRefresh: Event<void>;
+	_serviceBrand: undefined;
+
+	constructor() {
+		this.onDidCopilotTokenRefresh = Event.None;
+	}
+
+	getCopilotToken(_force?: boolean): Promise<CopilotToken> {
+		return undefined as unknown as Promise<CopilotToken>;
+	}
+
+	resetCopilotToken(_httpError?: number): void {
+	}
+
+}
+
 export function getOrCreateTestingCopilotTokenManager(): SyncDescriptor<ICopilotTokenManager & CheckCopilotToken> {
 	console.log('@@@ getOrCreateTestingCopilotTokenManager: called');
-	return new SyncDescriptor(CopilotTokenManagerFromGitHubToken, []);
+	return new SyncDescriptor(DummyCopilotTokenManager, []);
 }
 
 //TODO: Move this to common
@@ -332,16 +349,7 @@ export class CopilotTokenManagerFromGitHubToken extends BaseCopilotTokenManager 
 	}
 
 	async getCopilotToken(force?: boolean): Promise<CopilotToken> {
-		if (!this.copilotToken || this.copilotToken.expires_at < nowSeconds() - (60 * 5 /* 5min */) || force) {
-			const tokenResult = await this.authFromDevDeviceId('a7b3f1e2-4c8d-4a9b-8f3e-2d7c1a5b9e4f');
-			if (tokenResult.kind === 'failure') {
-				throw Error(
-					`Failed to get copilot token: ${tokenResult.reason.toString()} ${tokenResult.message ?? ''}`
-				);
-			}
-			this.copilotToken = { ...tokenResult };
-		}
-		return new CopilotToken(this.copilotToken);
+		return undefined as unknown as CopilotToken;
 	}
 
 	async checkCopilotToken() {
