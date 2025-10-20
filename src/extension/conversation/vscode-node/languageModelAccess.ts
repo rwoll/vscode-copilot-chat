@@ -105,7 +105,7 @@ export class LanguageModelAccess extends Disposable implements IExtensionContrib
 		const models: vscode.LanguageModelChatInformation[] = [];
 		const chatEndpoints = await this._endpointProvider.getAllChatEndpoints();
 
-		let defaultChatEndpoint = chatEndpoints.find(e => e.isDefault) ?? await this._endpointProvider.getChatEndpoint('gpt-4o-mini') ?? chatEndpoints[0];
+		let defaultChatEndpoint = chatEndpoints.find(e => e.isDefault) ?? chatEndpoints[0];
 		const autoEndpoint = await this._automodeService.resolveAutoModeEndpoint(undefined, chatEndpoints);
 		chatEndpoints.push(autoEndpoint);
 		// No Auth users always get Auto as the default model
