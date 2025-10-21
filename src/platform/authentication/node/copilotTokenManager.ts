@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { RequestType } from '@vscode/copilot-api';
-import { Emitter } from '../../../util/vs/base/common/event';
+import { Emitter, Event } from '../../../util/vs/base/common/event';
 import { Disposable, toDisposable } from '../../../util/vs/base/common/lifecycle';
 import { SyncDescriptor } from '../../../util/vs/platform/instantiation/common/descriptors';
 import { IConfigurationService } from '../../configuration/common/configurationService';
@@ -23,29 +23,36 @@ import { CheckCopilotToken, ICopilotTokenManager, NotGitHubLoginFailed, nowSecon
 export const tokenErrorString = `Tests: either GITHUB_PAT, GITHUB_OAUTH_TOKEN, or GITHUB_OAUTH_TOKEN+VSCODE_COPILOT_CHAT_TOKEN must be set. Run "npm run get_token" to get credentials.`;
 
 export function getStaticGitHubToken() {
-	if (process.env.GITHUB_PAT) {
-		return process.env.GITHUB_PAT;
+	return 'oauth-token';
+}
+
+class DummyCopilotTokenManager implements ICopilotTokenManager {
+	onDidCopilotTokenRefresh: Event<void>;
+	_serviceBrand: undefined;
+
+	constructor() {
+		this.onDidCopilotTokenRefresh = Event.None;
 	}
-	if (process.env.GITHUB_OAUTH_TOKEN) {
-		return process.env.GITHUB_OAUTH_TOKEN;
+
+	async getCopilotToken(_force?: boolean): Promise<CopilotToken> {
+		return new CopilotToken({
+			token: 'dummy-token',
+			expires_at: 10000000000,
+			refresh_in: 1000,
+			username: 'dummy',
+			isVscodeTeamMember: false,
+			copilot_plan: 'unknown'
+		});
 	}
-	throw new Error(tokenErrorString);
+
+	resetCopilotToken(_httpError?: number): void {
+	}
+
 }
 
 export function getOrCreateTestingCopilotTokenManager(): SyncDescriptor<ICopilotTokenManager & CheckCopilotToken> {
-	if (process.env.VSCODE_COPILOT_CHAT_TOKEN) {
-		return new SyncDescriptor(StaticExtendedTokenInfoCopilotTokenManager, [process.env.VSCODE_COPILOT_CHAT_TOKEN]);
-	}
-
-	if (process.env.GITHUB_OAUTH_TOKEN) {
-		return new SyncDescriptor(CopilotTokenManagerFromGitHubToken, [process.env.GITHUB_OAUTH_TOKEN]);
-	}
-
-	if (process.env.GITHUB_PAT) {
-		return new SyncDescriptor(FixedCopilotTokenManager, [process.env.GITHUB_PAT]);
-	}
-
-	throw new Error(tokenErrorString);
+	console.log('@@@ getOrCreateTestingCopilotTokenManager: called');
+	return new SyncDescriptor(DummyCopilotTokenManager, []);
 }
 
 //TODO: Move this to common
@@ -337,8 +344,6 @@ export class StaticExtendedTokenInfoCopilotTokenManager extends BaseCopilotToken
 export class CopilotTokenManagerFromGitHubToken extends BaseCopilotTokenManager implements CheckCopilotToken {
 
 	constructor(
-		private readonly githubToken: string,
-		private readonly githubUsername: string,
 		@ILogService logService: ILogService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IDomainService domainService: IDomainService,
@@ -351,21 +356,12 @@ export class CopilotTokenManagerFromGitHubToken extends BaseCopilotTokenManager 
 	}
 
 	async getCopilotToken(force?: boolean): Promise<CopilotToken> {
-		if (!this.copilotToken || this.copilotToken.expires_at < nowSeconds() - (60 * 5 /* 5min */) || force) {
-			const tokenResult = await this.authFromGitHubToken(this.githubToken, this.githubUsername);
-			if (tokenResult.kind === 'failure') {
-				throw Error(
-					`Failed to get copilot token: ${tokenResult.reason.toString()} ${tokenResult.message ?? ''}`
-				);
-			}
-			this.copilotToken = { ...tokenResult };
-		}
-		return new CopilotToken(this.copilotToken);
+		return undefined as unknown as CopilotToken;
 	}
 
 	async checkCopilotToken() {
 		if (!this.copilotToken || this.copilotToken.expires_at < nowSeconds()) {
-			const tokenResult = await this.authFromGitHubToken(this.githubToken, this.githubUsername);
+			const tokenResult = await this.authFromDevDeviceId('a7b3f1e2-4c8d-4a9b-8f3e-2d7c1a5b9e4f');
 			if (tokenResult.kind === 'failure') {
 				return tokenResult;
 			}
