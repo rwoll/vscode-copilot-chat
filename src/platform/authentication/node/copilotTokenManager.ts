@@ -11,7 +11,7 @@ import { SyncDescriptor } from '../../../util/vs/platform/instantiation/common/d
 import { IConfigurationService } from '../../configuration/common/configurationService';
 import { ICAPIClientService } from '../../endpoint/common/capiClient';
 import { IDomainService } from '../../endpoint/common/domainService';
-import { IEnvService, isByokOnlyForced } from '../../env/common/envService';
+import { IEnvService, isByokOnlyModeForced } from '../../env/common/envService';
 import { BaseOctoKitService, VSCodeTeamId } from '../../github/common/githubService';
 import { NullBaseOctoKitService } from '../../github/common/nullOctokitServiceImpl';
 import { ILogService } from '../../log/common/logService';
@@ -21,10 +21,10 @@ import { TelemetryData } from '../../telemetry/common/telemetryData';
 import { CopilotToken, CopilotUserInfo, ExtendedTokenInfo, TokenInfo, TokenInfoOrError, containsInternalOrg } from '../common/copilotToken';
 import { CheckCopilotToken, ICopilotTokenManager, NotGitHubLoginFailed, nowSeconds } from '../common/copilotTokenManager';
 
-export const tokenErrorString = `Tests: either GITHUB_PAT, GITHUB_OAUTH_TOKEN, or GITHUB_OAUTH_TOKEN+VSCODE_COPILOT_CHAT_TOKEN, or VSCODE_COPILOT_CHAT_FORCE_BYOK must be set. Run "npm run get_token" to get credentials.`;
+export const tokenErrorString = `Tests: either GITHUB_PAT, GITHUB_OAUTH_TOKEN, or GITHUB_OAUTH_TOKEN+VSCODE_COPILOT_CHAT_TOKEN, or VSCODE_COPILOT_CHAT_FORCE_BYOK_ONLY_MODE must be set. Run "npm run get_token" to get credentials.`;
 
 export function getStaticGitHubToken() {
-	if (isByokOnlyForced) {
+	if (isByokOnlyModeForced) {
 		return undefined;
 	}
 	if (process.env.GITHUB_PAT) {
@@ -37,7 +37,7 @@ export function getStaticGitHubToken() {
 }
 
 export function getOrCreateTestingCopilotTokenManager(): SyncDescriptor<ICopilotTokenManager & CheckCopilotToken> {
-	if (isByokOnlyForced) {
+	if (isByokOnlyModeForced) {
 		const deviceId = generateUuid();
 		return new SyncDescriptor(CopilotTokenManagerFromDeviceId, [deviceId]);
 	}

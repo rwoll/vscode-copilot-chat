@@ -6,7 +6,7 @@ import type { Disposable, LanguageModelChatInformation, LanguageModelChatProvide
 import { CopilotToken } from '../../../platform/authentication/common/copilotToken';
 import { ICAPIClientService } from '../../../platform/endpoint/common/capiClient';
 import { EndpointEditToolName, IChatModelInformation } from '../../../platform/endpoint/common/endpointProvider';
-import { isByokOnlyForced } from '../../../platform/env/common/envService';
+import { isByokOnlyModeForced } from '../../../platform/env/common/envService';
 import { TokenizerType } from '../../../util/common/tokenizer';
 import { localize } from '../../../util/vs/nls';
 
@@ -179,7 +179,7 @@ export function byokKnownModelsToAPIInfo(providerName: string, knownModels: BYOK
 }
 
 export function isBYOKEnabled(copilotToken: Omit<CopilotToken, "token">, capiClientService: ICAPIClientService): boolean {
-	if (isByokOnlyForced) {
+	if (isByokOnlyModeForced) {
 		return true;
 	}
 
